@@ -33,12 +33,12 @@ void LCM_Light_Setting(u8 level)
 *******************************************************************************/
 void LCM_Init(void)
 {
-  
+
   delay_ms(100);
   
   //与显示板握手,等待
   while(!LCM_HandOn_Check());
-  
+//  LCM_HandOn_Check();
   LCM_Light_Setting(50);
   
   ZTM_FullScreenImageDisp(2);

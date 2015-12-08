@@ -142,3 +142,47 @@ u16 key_scan(u8 mode)
         return 0;
     }
 }
+QueueHandle_t xQueue1;
+void vKEYTask( void *pvParameters )
+{
+
+      u32 key_data;    
+      
+      portBASE_TYPE xStatus;
+      
+      xQueue1 = xQueueCreate( 1, sizeof( uint32_t ) );
+      
+      for( ;; )
+      {
+          key_data = key_scan(0);
+          
+          xStatus = xQueueSendToFront(xQueue1,&key_data,0);
+          
+          if( xStatus != pdPASS);
+          
+          vTaskDelay(5);
+      
+      }
+      
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

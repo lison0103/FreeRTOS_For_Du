@@ -1,7 +1,8 @@
-#include "time.h"
+#include "timer.h"
 #include "time_display.h"
 #include "bsp_rtc_1302.h"
 #include "lcd.h"
+#include "menu.h"
 
 
 u8 TimeBuff[6];
@@ -57,3 +58,32 @@ void TIM3_IRQHandler(void)   //TIM3中断
                     }
 		}
 }
+
+void vTIMETask( void *pvParameters )
+{
+//    vTaskDelay(500);    
+  
+    RTCC_Init();            //RTC初始化，rt1302
+    
+    menu_init();            //初始化菜单 
+    
+    for( ;; )
+    {
+        vTaskDelay(500); 
+        
+        RTCC_GetTime(TimeBuff);
+        time_display(307, 308, TimeBuff);       
+        
+        if(lcd_sleep == 0)
+        {                  
+            sleepcount++;
+        }
+              
+    }
+
+}
+
+
+
+
+

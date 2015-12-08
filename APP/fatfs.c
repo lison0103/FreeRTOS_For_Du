@@ -22,7 +22,7 @@ u8 Fatfs_init(void)
     {
         temp++;
         res=exf_getfree("0:",&dtsize,&dfsize);//得到FLASH剩余容量和总容量
-        delay_ms(200);		   
+        delay_ms(40);		   
     }while(res&&temp<20);//连续检测20次		  
     if(res == FR_NO_FILESYSTEM)//文件系统不存在
     {

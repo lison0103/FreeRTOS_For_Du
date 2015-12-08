@@ -65,14 +65,53 @@ u8 *Version = {"V0.2"};
 //#define mainCOM_TEST_LED			( 3 )
 
 
-void vLCDTask( void *pvParameters )
+void vMENUTask( void *pvParameters )
 {
 
 
 	for( ;; )
 	{
-          menu_pocess();
+            menu_pocess();
+            vTaskDelay(5);
 	}
+}
+//int count1 = 0;
+//void vTESTTask( void *pvParameters )
+//{
+//
+//        
+//	for( ;; )
+//	{
+//          count1++;
+//
+//
+//          vTaskDelay(100);
+//            
+//	}
+//}
+
+//void vTEST2Task( void *pvParameters )
+//{
+//
+//	for( ;; )
+//	{
+//          count1 = 0;
+//          vTaskDelay(100);
+//            
+//	}
+//}
+
+void vIAPTask( void *pvParameters )
+{
+    
+    for( ;; )
+    {
+//      vTaskSuspendAll();
+//      vTaskEndScheduler();
+        iap_load_app(FLASH_APP1_ADDR);
+    
+    }
+
 }
 
 int main(void)
@@ -80,19 +119,16 @@ int main(void)
   
 
         RCC_Configuration(RCC_PLLMul_9);//时钟初始化
-	NVIC_Configuration();	 //中断分组设置
-	delay_init();	    	 //延时函数初始化	          					
+	NVIC_Configuration();	 //中断分组设置	          					
         hardware_init();        //硬件版本确认初始化       	               
         key_init();             //按键初始化                               
         USART2_Init(115200);          //USART2初始化，用作LCD数据传输  
-
-        LCM_Init();             //ZTM LCD初始化
-                     
-        enter_menu();           //判断是否进入Loader，等待约1s，按键F1进入，否则进入APP
-        mem_init();		//初始化内存池
-        SPI_Flash_Init();       //外部flash初始化        
-        RTCC_Init();            //RTC初始化，rt1302
         BKP_Init();             //BKP寄存器初始化
+        LCM_Init();             //ZTM LCD初始化              
+        enter_menu();           //判断是否进入Loader，等待约1s，按键F1进入，否则进入APP    
+        
+        mem_init();		//初始化内存池
+        SPI_Flash_Init();       //外部flash初始化              
         Version_init();         //读取APP更新到的版本号
         Language_init();        //读取APP设置的语言
         
@@ -100,15 +136,27 @@ int main(void)
         {
             //申请内存失败
         }
-        menu_init();            //初始化菜单       
+              
         
         //初始化一个定时器用作时间显示
-        TIM3_Int_Init(4999,7199);//10Khz的计数频率，计数到5000为500ms       
+//        TIM3_Int_Init(4999,7199);//10Khz的计数频率，计数到5000为500ms       
 //        wdt_init();             //初始化独立看门狗，20s复位
      
 /********************************************************************************************/	
                
-        xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+        xTaskCreate( vMENUTask, "menu", 512, NULL, 1, NULL );
+        
+        xTaskCreate( vKEYTask, "key", 512, NULL, 3, NULL );
+        
+        xTaskCreate( vTIMETask, "rtc_time", 512, NULL, 2, NULL );
+        
+        xTaskCreate( vIWDGTask, "iwdg", 512, NULL, 4, NULL );
+        
+        xTaskCreate( vSTATUSTask, "status", 512, NULL, 1, NULL );
+        
+//        iap_load_app(FLASH_APP1_ADDR);
+        
+//        xTaskCreate( vIAPTask, "iap", 512, NULL, 4, NULL);
         
         vTaskStartScheduler();
         

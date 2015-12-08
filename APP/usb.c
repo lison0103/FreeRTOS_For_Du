@@ -79,10 +79,12 @@ void UsbMassStor_init(void)
         
  	//USB配置
                 
-        delay_ms(200);
+//        delay_ms(200);
+        vTaskDelay(50);
  	usb_port_set(0); 	//USB先断开
         
-	delay_ms(300);
+//	delay_ms(300);
+        vTaskDelay(100);
    	usb_port_set(1);	//USB再次连接	
         
         
@@ -120,7 +122,8 @@ void UsbMassStor_Status(void)
     if(bDeviceState==CONFIGURED)
     {
         tct++;
-        delay_ms(15);
+//        delay_ms(15);
+        vTaskDelay(5);
         if(tct==200)
         {
             tct=0;

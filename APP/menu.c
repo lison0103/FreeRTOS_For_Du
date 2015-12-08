@@ -66,8 +66,9 @@ void Framebuffer_display(u16 x1, u16 y1, u16 x2, u16 y2, u8 size, const u8 *buf1
     TXM_StringDisplay(0,x2,y2,size,1,WHITE ,DGRAY,(void*)buf2);
     
     ZTM_DisBufSwitch(0x40);                                             /* 将显示缓存设置为备用缓存     */
-    delay_ms(tms);
-    vTaskDelay( tms / portTICK_RATE_MS);
+    vTaskDelay(tms);
+//    delay_ms(tms);
+//    vTaskDelay( tms / portTICK_RATE_MS);
     
 //    ZTM_DisBufSwitch(0x20);                                             /* 写指针指向主缓存             */
 //    ZTM_DisBufSwitch(0x40);                                             /* 将显示缓存设置为主缓存       */
@@ -213,47 +214,47 @@ void menu_init(void)
   {
     
       TXM_StringDisplay(0,180,290,24,1,RED ,DGRAY, (void*)Menu_Item_Descrip[0][LANGUAGE]);       
-      delay_ms(5); 
+      vTaskDelay(5); 
       
       for(u8 i = 0;i < 4;i++)
       {
           TXM_StringDisplay(0,20,70 + (i*45),24,1,YELLOW ,BLUE,  (void*)Menu_Item_Descrip[i+1][LANGUAGE]);
-          delay_ms(5);                
+          vTaskDelay(5);               
       }    
       
       if(1 == menu_item)//语言切换
       {
           TXM_StringDisplay(0,20,250,24,1,RED ,BLUE,    (void*)Status_Item_Descrip[0][LANGUAGE]);
-          delay_ms(5);            
+          vTaskDelay(5);           
       }
       else if(2 == menu_item)//选择连接电脑
       {
           TXM_StringDisplay(0,20,70,24,1,YELLOW ,RED,  (void*)Menu_Item_Descrip[1][LANGUAGE]);
-          delay_ms(5); 
+          vTaskDelay(5); 
           TXM_StringDisplay(0,20,250,24,1,RED ,BLUE, (void*)Status_Item_Descrip[1][LANGUAGE]);
-          delay_ms(5);       
+          vTaskDelay(5);       
       }  
       else if(3 == menu_item)//选择断开电脑
       {   
           TXM_StringDisplay(0,20,115,24,1,YELLOW ,RED,  (void*)Menu_Item_Descrip[2][LANGUAGE]);
-          delay_ms(5);      
+          vTaskDelay(5);      
           TXM_StringDisplay(0,20,250,24,1,RED ,BLUE, (void*)Status_Item_Descrip[8][LANGUAGE]);
-          delay_ms(5);  
+          vTaskDelay(5); 
       } 
       else if(4 == menu_item)//选择更新APP
       {  
           TXM_StringDisplay(0,20,160,24,1,YELLOW ,RED,  (void*)Menu_Item_Descrip[3][LANGUAGE]);
-          delay_ms(5);
+          vTaskDelay(5);
           TXM_StringDisplay(0,20,250,24,1,RED ,BLUE, (void*)Status_Item_Descrip[2][LANGUAGE]);
-          delay_ms(5); 
+          vTaskDelay(5); 
       
       } 
       else if(5 == menu_item)//选择进入APP
       {  
           TXM_StringDisplay(0,20,205,24,1,YELLOW ,RED,  (void*)Menu_Item_Descrip[4][LANGUAGE]);
-          delay_ms(5);      
+          vTaskDelay(5);     
           TXM_StringDisplay(0,20,250,24,1,RED ,BLUE, (void*)Status_Item_Descrip[6][LANGUAGE]);
-          delay_ms(5);  
+          vTaskDelay(5); 
       }   
   }
   
@@ -270,7 +271,7 @@ void enter_menu(void)
           if(1 == BKP_Read(BKP_ADDR1(5)))
           {
               BKP_Write(BKP_ADDR1(5),0); 
-              delay_ms(1000);
+              delay_ms(200);
           }
           else
           {          
@@ -281,7 +282,7 @@ void enter_menu(void)
                   {                
                       break;                                   
                   }        
-                  delay_ms(100);
+                  delay_ms(15);
                   timeover++;
                   printf("enter_menu:timeover = %d\r\n", timeover);
                   
@@ -359,8 +360,8 @@ u8 DisconnectUsb_process(void)
             myfree(Data_Buffer);
             myfree(Bulk_Data_Buff);
         #endif
-            delay_ms(500);
-            vTaskDelay( 500 / portTICK_RATE_MS);
+            vTaskDelay(500);
+//            vTaskDelay( 500 / portTICK_RATE_MS);
             
             
             Closeframebuffer();
@@ -451,18 +452,19 @@ void JumpToApp_process(void)
       
       menu_item = 5;
       menu_init();
-      delay_ms(100);
+      vTaskDelay(100);
       
       printf("开始执行FLASH用户代码!!\r\n");
       if(((*(vu32*)(FLASH_APP1_ADDR+4))&0xFF000000)==0x08000000)//判断是否为0X08XXXXXX.
       {	 
           Framebuffer_display(40,130,30,154,24,Status_Descrip[3][LANGUAGE],"",1000);
           Closeframebuffer();
-          TIM_Cmd(TIM3, DISABLE);      
-          delay_ms(100);
-          INTX_DISABLE();          
+//          TIM_Cmd(TIM3, DISABLE);      
+          vTaskDelay(100);
+//          INTX_DISABLE();          
 //          __set_FAULTMASK(1);
 //          NVIC_SystemReset();
+          vPortEndScheduler();
           iap_load_app(FLASH_APP1_ADDR);//执行FLASH APP代码
       }
       else 
@@ -478,9 +480,21 @@ void JumpToApp_process(void)
 *******************************************************************************/
 void menu_pocess(void)
 {
-            u8 key = 0;
-    
-            key=key_scan(0);
+            u32 key = 0;
+            
+            portBASE_TYPE xStatus;
+                           
+//            key=key_scan(0);
+            
+            if( uxQueueMessagesWaiting( xQueue1 ) != 0 )
+            {
+
+            }
+            
+            xStatus = xQueueReceive(xQueue1, &key , 2000);
+            
+            if( xStatus != pdPASS);
+            
             if(key)                                          //按下任意按键
             {
                 sleepcount = 0;
@@ -504,7 +518,7 @@ void menu_pocess(void)
                 {                   
                   if(DisconnectUsb_process())                //断开连接
                   {                     
-                      delay_ms(500);
+                      vTaskDelay(500);
                       if(UpdateApp_process())
                       {
                           JumpToApp_process();
@@ -523,14 +537,19 @@ void menu_pocess(void)
                     JumpToApp_process();                  //进入APP
                 } 
             }
-            else if(usb_connect)
+
+            
+//            delay_ms(10);
+}
+
+
+void vSTATUSTask( void *pvParameters )
+{
+      for( ;; )
+      {
+            if(usb_connect)
             {
                 UsbMassStor_Status();                       //usb状态显示
-//                if(usb_connect == 0)
-//                {
-//                    delay_ms(1000);
-//                    UpdateApp_process();
-//                }
             }
             
             if(sleepcount > 1*120)                      //1分钟无操作，调低屏幕亮度
@@ -539,8 +558,9 @@ void menu_pocess(void)
                 lcd_sleep = 1;
                 LCM_Light_Setting(5);
             }
-//            delay_ms(10);
+            
+            vTaskDelay(50);
+      
+      }
+
 }
-
-
-

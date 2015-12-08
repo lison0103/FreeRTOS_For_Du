@@ -54,7 +54,7 @@ void SPI1_SetSpeed(u8 SpeedSet)
 u8 SPI1_ReadWriteByte(u8 TxData)
 {		
 	u8 retry=0;				 	
-	while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET) //检查指定的SPI标志位设置与否:发送缓存空标志位
+	while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET) //检查指定的SPI标志位设置与否:发送缓存空标志位    //即发送缓存不为空，等待；发送缓存为空时，发送数据   
 		{
 		retry++;
 		if(retry>200)return 0;
@@ -62,7 +62,7 @@ u8 SPI1_ReadWriteByte(u8 TxData)
 	SPI_I2S_SendData(SPI1, TxData); //通过外设SPIx发送一个数据
 	retry=0;
 
-	while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET)//检查指定的SPI标志位设置与否:接受缓存非空标志位
+	while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET)//检查指定的SPI标志位设置与否:接受缓存非空标志位  //即没有接收缓存为空，等待；接收缓存有数据时，接收数据
 		{
 		retry++;
 		if(retry>200)return 0;

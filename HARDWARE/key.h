@@ -4,8 +4,16 @@
 
 //#define OLDHW
 
+/* Scheduler includes. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
 void key_init(void);
 u16 key_scan(u8 mode);
+void vKEYTask( void *pvParameters );
+
+extern QueueHandle_t xQueue1;
 
 #define KEY_SW2  GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_1)
 #define KEY_SW3  GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_2)

@@ -1,6 +1,6 @@
 #include "iwdg.h"
 
-u32 count = 3125; //最大值0xFFF / 4095    Tout = ((4*2^prer)*count) / 40
+u32 count = 3125; //最大值0xFFF / 4095    Tout = ((4*2^prer)*count) / 40    256*3125/40 = 20000ms = 20s
 
 void wdt_init(void)
 {
@@ -13,4 +13,20 @@ void wdt_init(void)
     IWDG_ReloadCounter();  //按照IWDG重装载寄存器的值重装载IWDG计数器
     
     IWDG_Enable();  //使能IWDG 
+}
+
+
+
+void vIWDGTask( void *pvParameters )
+{
+
+    wdt_init();
+    
+    for( ;; )
+    {
+        IWDG_ReloadCounter();  //喂狗
+        vTaskDelay(10000);
+    
+    }
+
 }

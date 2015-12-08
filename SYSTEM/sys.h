@@ -3,6 +3,11 @@
 #include "stm32f10x.h"
 #include "usart.h"
 	 
+/* Scheduler includes. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
 
 //0,不支持ucos
 //1,支持ucos
